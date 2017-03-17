@@ -15,6 +15,9 @@ public:
     ID(const ID& Other) {
       InternalID = Other.InternalID;
     }
+    ID(const std::string& str) {
+      InternalID = StringCache::get()[str].InternalID;
+    }
     ID& operator=(const ID& Other) {
       InternalID = Other.InternalID;
       return *this;
@@ -32,6 +35,14 @@ public:
 
     bool operator!=(const ID& Other) const {
       return InternalID != Other.InternalID;
+    }
+
+    bool operator==(const std::string& Other) const {
+      return *this == StringCache::get()[Other];
+    }
+
+    bool operator!=(const std::string& Other) const {
+      return *this != StringCache::get()[Other];
     }
 
     friend class StringCache;

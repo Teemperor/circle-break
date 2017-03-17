@@ -7,8 +7,9 @@ class IncludePaths {
   std::vector<std::string> Paths;
 
 public:
-  IncludePaths() {
-    addPath(".");
+  IncludePaths(bool AddCurrentDir = true) {
+    if (AddCurrentDir)
+      addPath(".");
   }
 
   void addPath(const std::string& Path) {

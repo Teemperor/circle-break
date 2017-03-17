@@ -3,23 +3,25 @@
 
 #include <vector>
 
-
+#include <iostream>
 #include "HeaderInclude.h"
+#include "MiscUtils.h"
 
 class Header {
 
   unsigned LineCounter = 0;
 
-  std::string Path;
+  StringCache::ID Path;
 
   std::vector<HeaderInclude> IncludedHeaders;
 
 public:
-  Header(const std::string& Path) : Path(Path) {
+  Header(const std::string& P) : Path(StringCache::get()[normalizePath(P)]) {
   }
 
-  Header(const std::string& Path, const IncludePaths& Includes) : Path(Path) {
-    std::ifstream File(Path);
+  Header(const std::string& P, const IncludePaths& Includes) : Path(StringCache::get()[normalizePath(P)]) {
+
+    std::ifstream File(P);
     std::string Line;
     while (std::getline(File, Line)) {
       parseLine(Line, Includes);
@@ -35,7 +37,7 @@ public:
     }
   }
 
-  const std::string& getPath() const {
+  StringCache::ID getPath() const {
     return Path;
   }
 

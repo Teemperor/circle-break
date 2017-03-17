@@ -17,7 +17,7 @@ set(SOURCE_FILES main.cpp
     src/Project.cpp
     src/Project.h
     src/IncludePaths.cpp
-    src/IncludePaths.h)
+    src/IncludePaths.h src/MiscUtils.h src/DependencyPath.cpp src/DependencyPath.h)
 
 add_library(cycledetect-logic ${SOURCE_FILES})
 target_link_libraries(cycledetect-logic boost_filesystem boost_system)
@@ -31,5 +31,6 @@ add_executable(cycledetect-tests
                tests/HeaderIncludeTest.h
                tests/HeaderTest.h
                tests/ModuleTest.h
+               tests/ProjectTest.h
                )
 target_link_libraries(cycledetect-tests cycledetect-logic gtest)

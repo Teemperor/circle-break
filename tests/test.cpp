@@ -5,6 +5,7 @@
 #include "HeaderIncludeTest.h"
 #include "HeaderTest.h"
 #include "ModuleTest.h"
+#include "ProjectTest.h"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
