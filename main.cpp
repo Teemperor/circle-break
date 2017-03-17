@@ -5,6 +5,6 @@
 int main() {
   std::cout << "Hello, World!" << std::endl;
   Module m;
-  m.parseDirectory(".");
+  //m.parseDirectory(".");
   return 0;
 }

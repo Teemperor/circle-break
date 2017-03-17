@@ -12,6 +12,7 @@ std::string IncludePaths::findFile(const std::string &PathStr) const {
       filesystem::path LookupPath = IncludePath / Path;
       if (filesystem::exists(LookupPath)) {
         std::string Result = LookupPath.normalize().string();
+        // Remove the annoying leading "./" on paths...
         if (Result.size() > 2 && Result[0] == '.' && Result[1] == '/') {
           return Result.substr(2);
         }

@@ -4,6 +4,7 @@
 #include "StringCacheTest.h"
 #include "HeaderIncludeTest.h"
 #include "HeaderTest.h"
+#include "ModuleTest.h"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
