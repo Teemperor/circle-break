@@ -41,6 +41,10 @@ public:
     return Path;
   }
 
+  std::vector<HeaderInclude>& getIncludedHeaders() {
+    return IncludedHeaders;
+  }
+
   const std::vector<HeaderInclude>& getIncludedHeaders() const {
     return IncludedHeaders;
   }

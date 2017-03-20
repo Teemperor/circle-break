@@ -28,6 +28,10 @@ public:
     return !empty();
   }
 
+  const Module* at(std::size_t Index) const {
+    return Nodes.at(Index);
+  }
+
   std::size_t length() const {
     return Nodes.size();
   }

@@ -88,12 +88,13 @@ public:
         std::string HeaderPath = Include.getFile().str();
 
         for (auto& Module : AllModules) {
-          if (&Module == this)
-            continue;
-
           if (Module.hasHeader(HeaderPath)) {
-            auto I = DependsOn.find(&Module);
-            DependsOn[&Module].weight += 1;
+            Include.setDependingModule(&Module);
+            if (&Module != this) {
+              auto I = DependsOn.find(&Module);
+              DependsOn[&Module].weight += 1;
+            }
+            break;
           }
         }
 

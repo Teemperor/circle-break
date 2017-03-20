@@ -7,10 +7,13 @@
 #include "StringCache.h"
 #include "IncludePaths.h"
 
+class Module;
+
 class HeaderInclude {
 
   StringCache::ID File;
   unsigned LineNumber;
+  const Module* DependingModule = nullptr;
 
 public:
   HeaderInclude() {
@@ -42,6 +45,14 @@ public:
 
     File = StringCache::get()[FilePath];
     return true;
+  }
+
+  void setDependingModule(const Module* M) {
+    DependingModule = M;
+  }
+
+  const Module* getDependingModule() const {
+    return DependingModule;
   }
 
   void setLine(unsigned int NewLineNumber) {

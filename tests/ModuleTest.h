@@ -52,4 +52,10 @@ TEST(Module, CycleDetection) {
   ASSERT_EQ(Modules[0].getPathTo(&Modules[5]).length(), 3);
   ASSERT_EQ(Modules[1].getPathTo(&Modules[5]).length(), 4);
   ASSERT_EQ(Modules[4].getPathTo(&Modules[5]).length(), 2);
+
+  ASSERT_EQ(Modules[5].getPathTo(&Modules[4]).length(), 0);
+  ASSERT_EQ(Modules[4].getPathTo(&Modules[3]).length(), 0);
+  ASSERT_EQ(Modules[3].getPathTo(&Modules[2]).length(), 0);
+  ASSERT_EQ(Modules[2].getPathTo(&Modules[1]).length(), 0);
+  ASSERT_EQ(Modules[1].getPathTo(&Modules[0]).length(), 0);
 }
