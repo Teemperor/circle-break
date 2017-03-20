@@ -1,5 +1,6 @@
 #include <iostream>
 #include <Project.h>
+#include <chrono>
 
 
 class ConsoleProjectFeedback : public ProjectFeedback {
@@ -224,6 +225,11 @@ void writeCycleReport(const std::vector<DependencyPath>& Cycles,  Project& proje
   std::ofstream reportFile("cycle_report.cycle.html");
   assert(reportFile.good());
   writeHtmlHeader(reportFile);
+
+  std::chrono::system_clock::time_point p = std::chrono::system_clock::now();
+
+  std::time_t t = std::chrono::system_clock::to_time_t(p);
+  reportFile << "<h5> Generated on " << std::ctime(&t) << "</h5>\n";
 
   size_t CycleIndex = 1;
   for (auto& Cycle : Cycles) {
