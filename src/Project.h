@@ -13,6 +13,11 @@ class ProjectFeedback {
 public:
   virtual ~ProjectFeedback() = default;
 
+
+  virtual void startParsing() = 0;
+  virtual void startLinking() = 0;
+  virtual void startScanning() = 0;
+
   virtual void startParsingModule(const Module& M) = 0;
   virtual void stopParsingModule(const Module& M) = 0;
   virtual void startLinkingModule(const Module& M) = 0;
@@ -34,6 +39,7 @@ public:
     IncludePaths IncPaths(false);
     IncPaths.addPath(path);
 
+    if (Feedback) Feedback->startParsing();
     while (dir != end) {
       if (dir->path().filename() == "interface") {
         Module module(dir->path().string());
@@ -46,6 +52,7 @@ public:
       ++dir;
     }
 
+    if (Feedback) Feedback->startLinking();
     for (auto& Module : Modules) {
       if (Feedback) Feedback->startLinkingModule(Module);
       Module.resolveDependencies(Modules);
@@ -55,6 +62,7 @@ public:
   }
 
   std::vector<DependencyPath> getCycles() const {
+    if (Feedback) Feedback->startScanning();
     std::vector<DependencyPath> Result;
     for (auto& Module : Modules) {
       if (Feedback) Feedback->startScanningModule(Module);

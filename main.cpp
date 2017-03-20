@@ -8,40 +8,151 @@ class ConsoleProjectFeedback : public ProjectFeedback {
   int parsed = 0;
 
 public:
-  ConsoleProjectFeedback() {
+  ConsoleProjectFeedback() = default;
 
+
+  virtual void startParsing() override {
+  }
+
+  virtual void startLinking() override {
+    std::cout << std::endl;
+
+  }
+
+  virtual void startScanning() override {
+    std::cout << std::endl;
   }
 
   virtual void startParsingModule(const Module& M) override {
     parsed++;
-    std::cout << "\rParsing " << parsed << ": " << M.getName() << "...";
+    std::cout << "\r[" << parsed << "/?] Parsing: "
+        << M.getName() << "...                                                                                        ";
     std::cout.flush();
   }
 
-  virtual void stopParsingModule(const Module& M) override {
-    std::cout << " OK!                                                                              ";
-  }
-
+  virtual void stopParsingModule(const Module& M) override {};
   virtual void startLinkingModule(const Module& M) override {
     linked++;
-    std::cout << "\r[" << linked << "/" << parsed << "] Linking " << parsed << ": " << M.getName() << "...";
+    std::cout << "\r[" << linked << "/" << parsed << "] Linking: "
+        << M.getName() << "...                                                                                        ";
     std::cout.flush();
   }
 
-  virtual void stopLinkingModule(const Module& M) override {
-    std::cout << " OK!                                                                              ";
-  }
-
+  virtual void stopLinkingModule(const Module& M) override {};
   virtual void startScanningModule(const Module& M) override {
     scanned++;
-    std::cout << "\r[" << scanned << "/" << parsed << "]Scanning " << scanned << ": " << M.getName() << "...";
+    std::cout << "\r[" << scanned << "/" << parsed << "] Scanning: "
+        << M.getName() << "...                                                                                        ";
     std::cout.flush();
   }
 
-  virtual void stopScanningModule(const Module& M) override {
-    std::cout << " OK!                                                                              ";
-  }
+  virtual void stopScanningModule(const Module& M) override {};
 };
+
+void writeHtmlHeader(std::ofstream& stream) {
+  stream << "<!DOCTYPE html>\n"
+         << "<html lang=\"en\">\n"
+         << "  <head>\n"
+         << "    <meta charset=\"utf-8\">\n"
+         << "    <title>Cycles in project</title>\n"
+         << "  </head>\n"
+         << "  <body>\n";
+}
+
+std::string getCycleString(const DependencyPath& Cycle) {
+  std::stringstream cycleString;
+  cycleString << "<pre>";
+  for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
+    auto Node = Cycle.at(i);
+    auto NextNode = Cycle.at((i + 1) % Cycle.length());
+    auto weight = Node->getDependencyInformation().at(NextNode).weight;
+    cycleString << Node->getName() << " &rarr; ";
+  }
+  cycleString << Cycle.back()->getName() << "</pre>\n";
+
+  return cycleString.str();
+}
+
+void writeHtmlFooter(std::ofstream& stream) {
+  stream << "  </body>\n"
+         << "</html>";
+}
+
+void writeSingleCycle(const DependencyPath& Cycle, std::size_t CycleIndex) {
+  std::ofstream cycleFile(std::string("cycle") + std::to_string(CycleIndex) + ".cycle.html");
+  assert(cycleFile.good());
+  writeHtmlHeader(cycleFile);
+
+  cycleFile << "<a href=\"cycle_report.cycle.html\">Back</a>\n";
+  cycleFile << "<h1>Cyclic dependency " << CycleIndex << "</h1>\n";
+  cycleFile << "<p>Cyclic dependency across following modules: </p>\n";
+  cycleFile << "<p style=\"font-weight: bold; \">" << getCycleString(Cycle) << "</p>\n";
+  cycleFile << "<p>Break one of the following dependencies to resolve this cyclic dependency:</p>\n";
+
+  std::map<std::size_t, std::pair<const Module*, const Module*> > EdgesByWeight;
+  for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
+    auto Node = Cycle.at(i);
+    auto NextNode = Cycle.at((i + 1) % Cycle.length());
+    auto weight = Node->getDependencyInformation().at(NextNode).weight;
+    EdgesByWeight.emplace(weight, std::make_pair(Node, NextNode));
+  }
+
+  size_t Index = 1;
+  for (std::pair<const std::size_t, std::pair<const Module*, const Module*> >& Dep : EdgesByWeight) {
+    cycleFile << "<div style=\"\n"
+        "    background-color: beige;\n"
+        "    border-color: black;\n"
+        "    padding-left: 1em;\n"
+        "    border-style: dotted;\n"
+        "    margin: 1em;\">\n";
+    cycleFile << "<h2>Dependency from " << Dep.second.first->getName() << " &rarr; " << Dep.second.second->getName() << "</h2>\n";
+    cycleFile << "Dependency created by following includes in " << Dep.second.first->getName() << ":<p>\n";
+
+    for (auto& Header : Dep.second.first->getHeaders()) {
+      for (auto& Inc : Header.getIncludedHeaders()) {
+        if (Inc.getDependingModule() == Dep.second.second) {
+          cycleFile << "<p>In file <span style=\"font-family: monospace; font-weight: bold;\">"
+                    << Header.getPath().str() << ":" << Inc.getLineNumber() << "</span>" <<
+               ": <span style=\"font-family: monospace; font-weight: bold; color:#800000;\">#include </span>" <<
+               "<span style=\"font-family: monospace; font-weight: bold; color:#339933;\">\"" << Inc.getFile().str()
+                    << "\"</span></p>\n";
+        }
+      }
+    }
+    cycleFile << "</div>\n";
+    Index++;
+  }
+
+  writeHtmlFooter(cycleFile);
+}
+
+void writeCycleReport(const std::vector<DependencyPath>& Cycles) {
+  std::ofstream reportFile("cycle_report.cycle.html");
+  assert(reportFile.good());
+  writeHtmlHeader(reportFile);
+
+  size_t CycleIndex = 1;
+  for (auto& Cycle : Cycles) {
+    reportFile << "<div style=\"\n"
+        "    background-color: beige;\n"
+        "    border-color: black;\n"
+        "    padding-left: 1em;\n"
+        "    border-style: dotted;\n"
+        "    margin: 1em;\">\n";
+    reportFile << "<h1>Cyclic dependency " << CycleIndex << "</a></h1>\n";
+    reportFile << "<p>Cyclic dependency across following modules: </p>\n";
+    reportFile << "<a href=\"cycle" << CycleIndex << ".cycle.html\">" << getCycleString(Cycle) << "</a>";
+
+
+    writeSingleCycle(Cycle, CycleIndex);
+
+    reportFile << "</div>\n";
+
+    CycleIndex++;
+  }
+
+  writeHtmlFooter(reportFile);
+}
 
 int main() {
   ConsoleProjectFeedback Feedback;
@@ -49,70 +160,7 @@ int main() {
 
   auto Cycles = project.getCycles();
 
-  std::ofstream report_file("cycle_report.cycle.html");
-  assert(report_file.good());
-  report_file << "<!DOCTYPE html>\n"
-      << "<html lang=\"en\">\n"
-      << "  <head>\n"
-      << "    <meta charset=\"utf-8\">\n"
-      << "    <title>Cycles in project</title>\n"
-      << "  </head>\n"
-      << "  <body>\n";
-
-
-  size_t CycleIndex = 1;
-  for (auto& Cycle : Cycles) {
-    std::map<std::size_t, std::pair<const Module*, const Module*> > EdgesByWeight;
-
-    report_file << "<h1><a href=\"cycle" << CycleIndex << ".cycle.html\">Cycle " << CycleIndex << "</a></h1>" << std::endl;
-    std::stringstream cycleString;
-    cycleString << "<pre>";
-    for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
-      auto Node = Cycle.at(i);
-      auto NextNode = Cycle.at((i + 1) % Cycle.length());
-      auto weight = Node->getDependencyInformation().at(NextNode).weight;
-      cycleString << Node->getName() << " =|" << weight << "|=&gt; ";
-      EdgesByWeight.emplace(weight, std::make_pair(Node, NextNode));
-    }
-    cycleString << Cycle.back()->getName() << "</pre>\n";
-
-    report_file << cycleString.str();
-
-    std::ofstream cycle_file(std::string("cycle") + std::to_string(CycleIndex) + ".cycle.html");
-    assert(cycle_file.good());
-    cycle_file << "<!DOCTYPE html>\n"
-                << "<html lang=\"en\">\n"
-                << "  <head>\n"
-                << "    <meta charset=\"utf-8\">\n"
-                << "    <title>Cycle " << CycleIndex << "</title>\n"
-                << "  </head>\n"
-                << "  <body>\n";
-
-    cycle_file << "<a href=\"cycle_report.cycle.html\">Back</a>" << std::endl;
-    cycle_file << "<h1>Cycle " << CycleIndex << "</h1>" << std::endl;
-
-    size_t Index = 1;
-    for (std::pair<const std::size_t, std::pair<const Module*, const Module*> >& Dep : EdgesByWeight) {
-      cycle_file << "\n" << "<h2>link " << Dep.second.first->getName() << "=|" << Dep.first << "|=&gt;" << Dep.second.second->getName() << "</h2>" << std::endl;
-
-      for (auto& Header : Dep.second.first->getHeaders()) {
-        for (auto& Inc : Header.getIncludedHeaders()) {
-          if (Inc.getDependingModule() == Dep.second.second) {
-            cycle_file << "<p><pre>" << Header.getPath().str() << ":" << Inc.getLineNumber() << ": #include \"" << Inc.getFile().str() << "\"</pre></p>" << std::endl;
-          }
-        }
-      }
-      Index++;
-    }
-    CycleIndex++;
-
-
-    cycle_file << "  </body>\n"
-                << "</html>";
-  }
-
-  report_file << "  </body>\n"
-              << "</html>";
+  writeCycleReport(Cycles);
 
 
 /*
