@@ -46,6 +46,8 @@ public:
   virtual void stopScanningModule(const Module& M) override {};
 };
 
+typedef std::unordered_map<const Module*, std::unordered_set<const Module*> > UsedModulesDict;
+
 void writeHtmlHeader(std::ofstream& stream) {
   stream << "<!DOCTYPE html>\n"
          << "<html lang=\"en\">\n"
@@ -75,10 +77,103 @@ void writeHtmlFooter(std::ofstream& stream) {
          << "</html>";
 }
 
-void writeSingleCycle(const DependencyPath& Cycle, std::size_t CycleIndex) {
+void writeFilterList(std::ofstream& stream, std::size_t uid, const Module& Module, Project& project,
+                     const UsedModulesDict& UsableModules) {
+
+  stream << "<h4 style=\"margin-top: 3em;\">Search headers/modules that can be included from "
+         << Module.getShortPath() << ":</h4><p> Green color = can be included here. "
+      "Red color = would cause another cylic dependency.\n"
+      "Examples searches are 'DataFormats/TrackerCommon/interface/TrackerTopology.h' or 'DataFormats/TrackerCommon'</p>\n";
+  stream << "<input type=\"text\" class=\"myInput\" id=\"myInput" << uid <<
+           "\" onkeyup=\"filterFunc" << uid << "()\" "
+           "placeholder=\"Search for usable modules...\" title=\"Type a module name\">";
+
+  stream <<
+      "<ul class=\"filterList\" id=\"myUL" << uid << "\">\n";
+
+  auto& CurrentUsableModules = UsableModules.at(&Module);
+
+  for (auto& ModuleIter : project.getModules()) {
+    bool Usable = CurrentUsableModules.find(&ModuleIter) != CurrentUsableModules.end();
+    stream << "<li style=\"display: none;\" class=\"" <<
+            (Usable ? "good" : "bad") << "\">" << ModuleIter.getShortPath()
+           << "</li>\n";
+  }
+
+  stream << "</ul>\n";
+
+  stream <<
+      "<script>\n"
+      "function filterFunc" << uid << "() {\n"
+      "    var input, filter, ul, li, a, i;\n"
+      "    input = document.getElementById(\"myInput" << uid << "\");\n"
+      "    path = input.value.toUpperCase();\n"
+      "    path = path.trim();\n"
+      "    if (path.endsWith(\".H\") || path.endsWith(\".HH\"))\n"
+      "      if (path.lastIndexOf(\"/\") !== -1)\n"
+      "        path = path.substring(0, path.lastIndexOf(\"/\"));\n"
+      "    if (path.endsWith(\"/INTERFACE\"))\n"
+      "      path = path.substring(0, path.length - \"/INTERFACE\".length);\n"
+      "    ul = document.getElementById(\"myUL" << uid << "\");\n"
+      "    li = ul.getElementsByTagName(\"li\");\n"
+      "    for (i = 0; i < li.length; i++) {\n"
+      "        if (path.length != 0 && li[i].innerHTML.toUpperCase().indexOf(path) > -1) {\n"
+      "            li[i].style.display = \"\";\n"
+      "        } else {\n"
+      "            li[i].style.display = \"none\";\n"
+      "        }\n"
+      "    }\n"
+      "}\n"
+      "</script>\n";
+
+}
+
+
+void writeSingleCycle(const DependencyPath& Cycle, std::size_t CycleIndex,  Project& project,
+                      const UsedModulesDict& UsableModules) {
   std::ofstream cycleFile(std::string("cycle") + std::to_string(CycleIndex) + ".cycle.html");
   assert(cycleFile.good());
-  writeHtmlHeader(cycleFile);
+
+  cycleFile << "<!DOCTYPE html>\n"
+            << "<html lang=\"en\">\n"
+            << "  <head>\n"
+            << "<style>"
+                "* {\n"
+                "  box-sizing: border-box;\n"
+                "}\n"
+                "\n"
+                ".myInput {\n"
+                "  width: 100%;\n"
+                "  font-size: medium;\n"
+                "  padding: 0.3em;\n"
+                "  border: 1px solid #ddd;\n"
+                "  margin-bottom: 12px;\n"
+                "}\n"
+                "\n"
+                ".filterList {\n"
+                "  list-style-type: none;\n"
+                "  padding: 0;\n"
+                "  margin: 0;\n"
+                "}\n"
+                "\n"
+                ".good { background-color: #e6ffcc; }\n"
+                ".bad { background-color: #ffcccc; }\n"
+                ".filterList li{\n"
+                "  border: 1px solid #ddd;\n"
+                "  margin-top: -1px; /* Prevent double borders */\n"
+                "  padding: 12px;\n"
+                "  text-decoration: none;\n"
+                "  font-size: 18px;\n"
+                "  color: black;\n"
+                "  display: block\n"
+                "}\n"
+                "\n"
+                "\n"
+                "</style>"
+            << "    <meta charset=\"utf-8\">\n"
+            << "    <title>Cycles in project</title>\n"
+            << "  </head>\n"
+            << "  <body>\n";
 
   cycleFile << "<a href=\"cycle_report.cycle.html\">Back</a>\n";
   cycleFile << "<h1>Cyclic dependency " << CycleIndex << "</h1>\n";
@@ -116,6 +211,7 @@ void writeSingleCycle(const DependencyPath& Cycle, std::size_t CycleIndex) {
         }
       }
     }
+    writeFilterList(cycleFile, Index, *Dep.second.first, project, UsableModules);
     cycleFile << "</div>\n";
     Index++;
   }
@@ -123,7 +219,8 @@ void writeSingleCycle(const DependencyPath& Cycle, std::size_t CycleIndex) {
   writeHtmlFooter(cycleFile);
 }
 
-void writeCycleReport(const std::vector<DependencyPath>& Cycles) {
+void writeCycleReport(const std::vector<DependencyPath>& Cycles,  Project& project,
+                      const UsedModulesDict& UsableModules) {
   std::ofstream reportFile("cycle_report.cycle.html");
   assert(reportFile.good());
   writeHtmlHeader(reportFile);
@@ -141,7 +238,7 @@ void writeCycleReport(const std::vector<DependencyPath>& Cycles) {
     reportFile << "<a href=\"cycle" << CycleIndex << ".cycle.html\">" << getCycleString(Cycle) << "</a>";
 
 
-    writeSingleCycle(Cycle, CycleIndex);
+    writeSingleCycle(Cycle, CycleIndex, project, UsableModules);
 
     reportFile << "</div>\n";
 
@@ -157,7 +254,28 @@ int main() {
 
   auto Cycles = project.getCycles();
 
-  writeCycleReport(Cycles);
+  UsedModulesDict UsableModules;
+
+  for (auto& Cycle : Cycles) {
+    for (auto& Module : Cycle) {
+      if (UsableModules.find(Module) == UsableModules.end()) {
+        for (auto& OtherModule : project.getModules()) {
+          // Can always use the current module
+          if (&OtherModule == Module) {
+            UsableModules[Module].insert(Module);
+          } else {
+            // If the usage of this other module doesn't cause a cycle, then
+            // we can use it.
+            if (!OtherModule.getPathTo(Module)) {
+              UsableModules[Module].insert(&OtherModule);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  writeCycleReport(Cycles, project, UsableModules);
 
 
 /*

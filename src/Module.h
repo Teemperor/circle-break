@@ -52,6 +52,8 @@ public:
     return hasHeader(StringCache::get()[HeaderPath]);
   }
 
+  std::string getShortPath() const;
+
   StringCache::ID getPath() const {
     return Path;
   }

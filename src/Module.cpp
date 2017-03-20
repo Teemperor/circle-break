@@ -82,3 +82,11 @@ std::vector<const Module *> Module::getDependsOn() const {
   }
   return Result;
 }
+
+std::string Module::getShortPath() const {
+  std::string Result = getPath().str();
+  if (hasEnding(Result, "/interface")) {
+    Result = Result.substr(0, Result.size() - std::string("/interface").size());
+  }
+  return Result;
+}
