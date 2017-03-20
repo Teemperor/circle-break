@@ -1,4 +1,5 @@
 #include "IncludePaths.h"
+#include "FileSystemCache.h"
 
 std::string IncludePaths::findFile(const std::string &PathStr) const {
   using namespace boost;
@@ -10,8 +11,9 @@ std::string IncludePaths::findFile(const std::string &PathStr) const {
   } else {
     for (const std::string& IncludePath : Paths) {
       filesystem::path LookupPath = IncludePath / Path;
-      if (filesystem::exists(LookupPath)) {
-        std::string Result = LookupPath.normalize().string();
+      std::string Result = LookupPath.normalize().string();
+
+      if (FileSystemCache::get().exists(Result)) {
         // Remove the annoying leading "./" on paths...
         if (Result.size() > 2 && Result[0] == '.' && Result[1] == '/') {
           return Result.substr(2);

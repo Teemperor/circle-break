@@ -27,7 +27,6 @@ public:
     parsed++;
     std::cout << "\r[" << parsed << "/?] Parsing: "
         << M.getName() << "...                                                                                        ";
-    std::cout.flush();
   }
 
   virtual void stopParsingModule(const Module& M) override {};
@@ -35,7 +34,6 @@ public:
     linked++;
     std::cout << "\r[" << linked << "/" << parsed << "] Linking: "
         << M.getName() << "...                                                                                        ";
-    std::cout.flush();
   }
 
   virtual void stopLinkingModule(const Module& M) override {};
@@ -43,7 +41,6 @@ public:
     scanned++;
     std::cout << "\r[" << scanned << "/" << parsed << "] Scanning: "
         << M.getName() << "...                                                                                        ";
-    std::cout.flush();
   }
 
   virtual void stopScanningModule(const Module& M) override {};

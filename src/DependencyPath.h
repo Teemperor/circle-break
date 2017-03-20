@@ -42,15 +42,7 @@ public:
     return Nodes.begin();
   }
 
-  bool similar(const DependencyPath& Other) {
-    std::unordered_set<const Module *> ThisModules;
-    std::unordered_set<const Module *> OtherModules;
-
-    ThisModules.insert(Nodes.begin(), Nodes.end());
-    OtherModules.insert(Other.Nodes.begin(), Other.Nodes.end());
-
-    return ThisModules == OtherModules;
-  }
+  bool similar(const DependencyPath& Other);
 
   std::vector<const Module*>::const_iterator end() const {
     return Nodes.end();
