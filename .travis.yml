@@ -1,0 +1,37 @@
+language: cpp
+sudo: required
+dist: trusty
+compiler:
+- g++
+os:
+- linux
+
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - gcc-5
+            - g++-5
+            - lcov
+
+
+branches:
+  only:
+  - master
+
+before_install:
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 50
+
+install:
+    - g++ --version
+
+script: ./run_build.sh
+
+notifications:
+  email:
+    - teemperor@gmail.com
+
+env:
+  global:
+  - LANG="en_US.UTF-8"

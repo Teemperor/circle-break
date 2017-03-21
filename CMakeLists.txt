@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.7)
-project(cycledetect)
+project(circle-break)
 
 set(CMAKE_CXX_STANDARD 11)
+
+find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 include_directories(src)
 
@@ -17,20 +19,31 @@ set(SOURCE_FILES main.cpp
     src/Project.cpp
     src/Project.h
     src/IncludePaths.cpp
-    src/IncludePaths.h src/MiscUtils.h src/DependencyPath.cpp src/DependencyPath.h src/FileSystemCache.cpp src/FileSystemCache.h)
+    src/IncludePaths.h src/MiscUtils.h
+    src/DependencyPath.cpp
+    src/DependencyPath.h
+    src/FileSystemCache.cpp
+    src/FileSystemCache.h
+    src/HtmlReport.cpp
+    src/HtmlReport.h
+)
 
-add_library(cycledetect-logic ${SOURCE_FILES})
-target_link_libraries(cycledetect-logic boost_filesystem boost_system)
+add_library(circle-break-logic ${SOURCE_FILES})
+target_link_libraries(circle-break-logic
+                      ${Boost_FILESYSTEM_LIBRARY}
+                      ${Boost_SYSTEM_LIBRARY}
+)
 
-add_executable(cycledetect main.cpp)
-target_link_libraries(cycledetect cycledetect-logic)
+add_executable(circle-break main.cpp)
+target_link_libraries(circle-break circle-break-logic)
 
-add_executable(cycledetect-tests
+add_executable(circle-break-tests
                tests/test.cpp
                tests/StringCacheTest.h
                tests/HeaderIncludeTest.h
                tests/HeaderTest.h
                tests/ModuleTest.h
                tests/ProjectTest.h
-               )
-target_link_libraries(cycledetect-tests cycledetect-logic gtest)
+)
+
+target_link_libraries(circle-break-tests circle-break-logic gtest)
