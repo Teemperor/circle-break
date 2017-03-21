@@ -1,8 +1,8 @@
-#Circle-break
+# Circle-break
 
 [![Build Status](https://travis-ci.org/Teemperor/circle-break.svg?branch=master)](https://travis-ci.org/Teemperor/circle-break)
 
-##Building
+## Building
 
 circle-break required boost and C++11. Type these commands to setup:
 
@@ -10,7 +10,7 @@ circle-break required boost and C++11. Type these commands to setup:
     cmake ..
     make circle-break
 
-##Usage
+## Usage
 
 `cd` to the top-level directory of the SCRAM project. Then run `circle-break` to just get a list of
 cyclic dependencies in the scram project. Run `circle-break --html` to generate a interactive HTML
