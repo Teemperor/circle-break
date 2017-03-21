@@ -60,7 +60,7 @@ public:
       stream << "<li style=\"display: none;\" class=\"" <<
              (Usable ? "good" : "bad") << "\"> <span>" << ModuleIter.getShortPath() << "</span> ";
 
-      if (!Usable) stream << ": " << getCycleString(ModuleIter.getPathTo(&Module));
+      if (!Usable) stream << ": Would cause cyclic dependency via " << getCycleString(ModuleIter.getPathTo(&Module));
 
       stream << "</li>\n";
     }
