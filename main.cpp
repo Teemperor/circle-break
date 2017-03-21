@@ -64,11 +64,9 @@ std::string getCycleString(const DependencyPath& Cycle) {
   cycleString << "<pre>";
   for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
     auto Node = Cycle.at(i);
-    auto NextNode = Cycle.at((i + 1) % Cycle.length());
-    auto weight = Node->getDependencyInformation().at(NextNode).weight;
-    cycleString << Node->getName() << " &rarr; ";
+    cycleString << Node->getShortPath() << " &rarr; ";
   }
-  cycleString << Cycle.back()->getName() << "</pre>\n";
+  cycleString << Cycle.back()->getShortPath() << "</pre>\n";
 
   return cycleString.str();
 }
@@ -81,13 +79,15 @@ void writeHtmlFooter(std::ofstream& stream) {
 void writeFilterList(std::ofstream& stream, std::size_t uid, const Module& Module, Project& project,
                      const UsedModulesDict& UsableModules) {
 
-  stream << "<h4 style=\"margin-top: 3em;\">Search headers/modules that can be included from "
+  stream << "<h4 style=\"margin-top: 3em;border-top: black;border-top-style: dotted;padding-top: 1em;\">"
+         << "Search headers/modules that can be included from "
          << Module.getShortPath() << ":</h4><p> Green color = can be included here. "
       "Red color = would cause another cylic dependency.\n"
-      "Examples searches are 'DataFormats/TrackerCommon/interface/TrackerTopology.h' or 'DataFormats/TrackerCommon'</p>\n";
+      "Examples searches are 'DataFormats/TrackerCommon/interface/TrackerTopology.h', 'DataFormats/TrackerCommon'"
+      " or the whole #include directive: '#include \"DataFormats/TrackerCommon/interface/TrackerTopology.h\"'</p>\n";
   stream << "<input type=\"text\" class=\"myInput\" id=\"myInput" << uid <<
            "\" onkeyup=\"filterFunc" << uid << "()\" "
-           "placeholder=\"Search for usable modules...\" title=\"Type a module name\">";
+           "placeholder=\"Search for usable modules...\" title=\"Type a module name to search.\">";
 
   stream <<
       "<ul class=\"filterList\" id=\"myUL" << uid << "\">\n";
@@ -110,11 +110,20 @@ void writeFilterList(std::ofstream& stream, std::size_t uid, const Module& Modul
       "    input = document.getElementById(\"myInput" << uid << "\");\n"
       "    path = input.value.toUpperCase();\n"
       "    path = path.trim();\n"
-      "    if (path.endsWith(\".H\") || path.endsWith(\".HH\"))\n"
-      "      if (path.lastIndexOf(\"/\") !== -1)\n"
-      "        path = path.substring(0, path.lastIndexOf(\"/\"));\n"
-      "    if (path.endsWith(\"/INTERFACE\"))\n"
-      "      path = path.substring(0, path.length - \"/INTERFACE\".length);\n"
+      "    if (path.startsWith(\"#INCLUDE\"))\n"
+      "      path = path.slice(\"#INCLUDE\".length)\n"
+      "    path = path.trim();\n"
+      "    if (path.startsWith(\"\\\"\") || path.startsWith(\"<\"))\n"
+      "      path = path.slice(1)\n"
+      "    if (path.endsWith(\"\\\"\") || path.endsWith(\">\"))\n"
+      "      path = path.substr(0, path.length - 1)\n"
+      "    path = path.trim();\n"
+      "    var firstSlash = path.indexOf(\"/\");"
+      "    var secondSlash = path.length;\n"
+      "    if (firstSlash !== -1)\n"
+      "      secondSlash = path.indexOf(\"/\", firstSlash + 1);\n"
+      "    if (secondSlash !== -1)\n"
+      "      path = path.substring(0, secondSlash);\n"
       "    ul = document.getElementById(\"myUL" << uid << "\");\n"
       "    li = ul.getElementsByTagName(\"li\");\n"
       "    for (i = 0; i < li.length; i++) {\n"
@@ -180,7 +189,7 @@ void writeSingleCycle(const DependencyPath& Cycle, std::size_t CycleIndex,  Proj
   cycleFile << "<h1>Cyclic dependency " << CycleIndex << "</h1>\n";
   cycleFile << "<p>Cyclic dependency across following modules: </p>\n";
   cycleFile << "<p style=\"font-weight: bold; \">" << getCycleString(Cycle) << "</p>\n";
-  cycleFile << "<p>Break one of the following dependencies to resolve this cyclic dependency:</p>\n";
+  cycleFile << "<p>Break one of the following dependencies between those modules to resolve this cyclic dependency:</p>\n";
 
   std::map<std::size_t, std::pair<const Module*, const Module*> > EdgesByWeight;
   for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
@@ -198,8 +207,8 @@ void writeSingleCycle(const DependencyPath& Cycle, std::size_t CycleIndex,  Proj
         "    padding-left: 1em;\n"
         "    border-style: dotted;\n"
         "    margin: 1em;\">\n";
-    cycleFile << "<h2>Dependency from " << Dep.second.first->getName() << " &rarr; " << Dep.second.second->getName() << "</h2>\n";
-    cycleFile << "Dependency created by following includes in " << Dep.second.first->getName() << ":<p>\n";
+    cycleFile << "<h2>Dependency from " << Dep.second.first->getShortPath() << " &rarr; " << Dep.second.second->getShortPath() << "</h2>\n";
+    cycleFile << "Dependency created by following includes in " << Dep.second.first->getShortPath() << ":<p>\n";
 
     for (auto& Header : Dep.second.first->getHeaders()) {
       for (auto& Inc : Header.getIncludedHeaders()) {
