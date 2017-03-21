@@ -61,12 +61,11 @@ void writeHtmlHeader(std::ofstream& stream) {
 
 std::string getCycleString(const DependencyPath& Cycle) {
   std::stringstream cycleString;
-  cycleString << "<pre>";
   for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
     auto Node = Cycle.at(i);
     cycleString << Node->getShortPath() << " &rarr; ";
   }
-  cycleString << Cycle.back()->getShortPath() << "</pre>\n";
+  cycleString << Cycle.back()->getShortPath() << "\n";
 
   return cycleString.str();
 }
@@ -97,8 +96,11 @@ void writeFilterList(std::ofstream& stream, std::size_t uid, const Module& Modul
   for (auto& ModuleIter : project.getModules()) {
     bool Usable = CurrentUsableModules.find(&ModuleIter) != CurrentUsableModules.end();
     stream << "<li style=\"display: none;\" class=\"" <<
-            (Usable ? "good" : "bad") << "\">" << ModuleIter.getShortPath()
-           << "</li>\n";
+            (Usable ? "good" : "bad") << "\"> <span>" << ModuleIter.getShortPath() << "</span> ";
+
+    if (!Usable) stream << ": " << getCycleString(ModuleIter.getPathTo(&Module));
+
+    stream << "</li>\n";
   }
 
   stream << "</ul>\n";
@@ -127,7 +129,8 @@ void writeFilterList(std::ofstream& stream, std::size_t uid, const Module& Modul
       "    ul = document.getElementById(\"myUL" << uid << "\");\n"
       "    li = ul.getElementsByTagName(\"li\");\n"
       "    for (i = 0; i < li.length; i++) {\n"
-      "        if (path.length != 0 && li[i].innerHTML.toUpperCase().indexOf(path) > -1) {\n"
+      "        a = li[i].getElementsByTagName(\"span\")[0];\n"
+      "        if (path.length != 0 && a.innerHTML.toUpperCase().indexOf(path) > -1) {\n"
       "            li[i].style.display = \"\";\n"
       "        } else {\n"
       "            li[i].style.display = \"none\";\n"
