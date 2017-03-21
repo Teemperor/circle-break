@@ -28,7 +28,7 @@ fi
 
 showinfo "Running tests ..."
 cd ../tests/files/
-../build/circle-break-tests
+../../build/circle-break-tests
 if [ $? -ne 0 ]; then
     error "Error: there are failed tests!"
     exit 4
