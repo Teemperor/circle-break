@@ -4,7 +4,7 @@
 
 ## Building
 
-circle-break required boost and C++11. Type these commands to setup:
+circle-break requires boost and C++11. Type these commands to setup:
 
     mkdir build
     cmake ..
