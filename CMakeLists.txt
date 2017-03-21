@@ -4,6 +4,7 @@ project(circle-break)
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(Boost COMPONENTS system filesystem REQUIRED)
+find_package(GTest)
 
 include_directories(src)
 
@@ -37,13 +38,18 @@ target_link_libraries(circle-break-logic
 add_executable(circle-break main.cpp)
 target_link_libraries(circle-break circle-break-logic)
 
-add_executable(circle-break-tests
-               tests/test.cpp
-               tests/StringCacheTest.h
-               tests/HeaderIncludeTest.h
-               tests/HeaderTest.h
-               tests/ModuleTest.h
-               tests/ProjectTest.h
-)
+if (${GTEST_FOUND})
 
-target_link_libraries(circle-break-tests circle-break-logic gtest)
+  add_executable(circle-break-tests
+                 tests/test.cpp
+                 tests/StringCacheTest.h
+                 tests/HeaderIncludeTest.h
+                 tests/HeaderTest.h
+                 tests/ModuleTest.h
+                 tests/ProjectTest.h
+  )
+
+  include_directories(${GTEST_INCLUDE_DIRS})
+
+  target_link_libraries(circle-break-tests circle-break-logic ${GTEST_BOTH_LIBRARIES})
+endif(${GTEST_FOUND})
