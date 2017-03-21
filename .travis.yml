@@ -24,6 +24,13 @@ branches:
 
 before_install:
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 50
+    - sudo wget https://github.com/google/googletest/archive/release-1.7.0.tar.gz
+    - sudo tar xf release-1.7.0.tar.gz
+    - cd googletest-release-1.7.0
+    - sudo cmake -DBUILD_SHARED_LIBS=ON .
+    - sudo make
+    - sudo cp -a include/gtest /usr/include
+    - sudo cp -a libgtest_main.so libgtest.so /usr/lib/
 
 install:
     - g++ --version
