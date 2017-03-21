@@ -1,5 +1,7 @@
 #Circle-break
 
+[![Build Status](https://travis-ci.org/Teemperor/circle-break.svg?branch=master)](https://travis-ci.org/Teemperor/circle-break)
+
 ##Building
 
 circle-break required boost and C++11. Type these commands to setup:
