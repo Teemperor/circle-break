@@ -1,5 +1,7 @@
 #include "Header.h"
 
+#include <fstream>
+
 void Header::parseLine(const std::string &Line, const IncludePaths &Includes) {
   LineCounter++;
   HeaderInclude include;

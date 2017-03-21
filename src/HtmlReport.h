@@ -4,6 +4,8 @@
 
 #include "Project.h"
 #include <chrono>
+#include <ostream>
+#include <fstream>
 
 class HtmlReport {
 public:
