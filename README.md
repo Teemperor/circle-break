@@ -5,7 +5,7 @@
 circle-break required boost and C++11. Type these commands to setup:
 
     mkdir build
-    cmake -DCMAKE_BUILD_TYPE=Release ..
+    cmake ..
     make circle-break
 
 ##Usage
