@@ -59,7 +59,7 @@ void printHelp() {
 int main(int argc, char **argv) {
   bool GenerateHtml = false;
   bool Silent = false;
-  
+
   for (int argi = 1; argi < argc; argi++) {
     std::string arg = argv[argi];
     if (arg == "--html") {
@@ -72,17 +72,31 @@ int main(int argc, char **argv) {
       std::cerr << "Unknown argument: " << arg << std::endl;
     }
   }
-  
+
   ConsoleProjectFeedback* Feedback = nullptr;
   if (!Silent)
     Feedback = new ConsoleProjectFeedback();
-  
+
   Project project(".", Feedback);
-  
-  if (Feedback) delete Feedback;
+  std::vector<DependencyPath> Cycles = project.getCycles();
+
 
   if (GenerateHtml) {
     HtmlReport Report;
-    Report.handleProject(project);
+    Report.handleProject(project, Cycles);
   }
+
+  if (!Silent) {
+    std::cout << std::endl;
+    for (auto& Cycle : Cycles) {
+      std::cout << "Found cyclic dependency: ";
+      for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
+        auto Node = Cycle.at(i);
+        std::cout << Node->getShortPath() << " -> ";
+      }
+      std::cout << Cycle.back()->getShortPath() << "\n";
+    }
+  }
+
+  if (Feedback) delete Feedback;
 }

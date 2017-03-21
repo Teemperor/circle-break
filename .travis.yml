@@ -31,6 +31,7 @@ before_install:
     - sudo make
     - sudo cp -a include/gtest /usr/include
     - sudo cp -a libgtest_main.so libgtest.so /usr/lib/
+    - cd ..
 
 install:
     - g++ --version

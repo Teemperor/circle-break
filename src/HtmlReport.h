@@ -228,8 +228,7 @@ public:
     writeHtmlFooter(reportFile);
   }
 
-  void handleProject(Project& project) {
-    auto Cycles = project.getCycles();
+  void handleProject(Project& project, const std::vector<DependencyPath>& Cycles) {
 
     UsedModulesDict UsableModules;
 
