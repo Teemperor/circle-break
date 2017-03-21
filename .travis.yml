@@ -14,7 +14,7 @@ addons:
             - gcc-5
             - g++-5
             - lcov
-            - boost
+            - libboost-all-dev
 
 
 branches:
