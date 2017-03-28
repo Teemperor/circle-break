@@ -65,7 +65,8 @@ int main(int argc, char **argv) {
     if (arg == "--html") {
       GenerateHtml = true;
     } else if (arg == "--help" || arg == "-h") {
-      GenerateHtml = true;
+      printHelp();
+      return 0;
     } else if (arg == "--silent" || arg == "-s") {
       Silent = true;
     } else {
@@ -88,13 +89,18 @@ int main(int argc, char **argv) {
 
   if (!Silent) {
     std::cout << std::endl;
+    std::cout << "Found " << Cycles.size() << " cyclic dependencies:\n";
+    unsigned Index = 1;
     for (auto& Cycle : Cycles) {
-      std::cout << "Found cyclic dependency: ";
+      std::cout << "No. " << Index << ": ";
       for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
         auto Node = Cycle.at(i);
-        std::cout << Node->getShortPath() << " -> ";
+        auto weight = Node->getDependencyInformation().at(Cycle.at((i + 1) % Cycles.size())).weight;
+        std::cout << Node->getShortPath() << " =" << weight << "=> ";
       }
       std::cout << Cycle.back()->getShortPath() << "\n";
+
+      Index++;
     }
   }
 
