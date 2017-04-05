@@ -95,7 +95,8 @@ int main(int argc, char **argv) {
       std::cout << "No. " << Index << ": ";
       for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
         auto Node = Cycle.at(i);
-        auto weight = Node->getDependencyInformation().at(Cycle.at((i + 1) % Cycles.size())).weight;
+        auto NextNode = Cycle.at(i + 1);
+        auto weight = Node->getDependencyInformation().at(NextNode).weight;
         std::cout << Node->getShortPath() << " =" << weight << "=> ";
       }
       std::cout << Cycle.back()->getShortPath() << "\n";
