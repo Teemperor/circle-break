@@ -11,13 +11,10 @@ class ConsoleProjectFeedback : public ProjectFeedback {
 public:
   ConsoleProjectFeedback() = default;
 
-
-  virtual void startParsing() override {
-  }
+  virtual void startParsing() override {}
 
   virtual void startLinking() override {
     std::cout << std::endl;
-
   }
 
   virtual void startScanning() override {
@@ -30,21 +27,21 @@ public:
         << M.getName() << "...                                                                                        ";
   }
 
-  virtual void stopParsingModule(const Module& M) override {};
+  virtual void stopParsingModule(const Module& M) override {}
   virtual void startLinkingModule(const Module& M) override {
     linked++;
     std::cout << "\r[" << linked << "/" << parsed << "] Linking: "
         << M.getName() << "...                                                                                        ";
   }
 
-  virtual void stopLinkingModule(const Module& M) override {};
+  virtual void stopLinkingModule(const Module& M) override {}
   virtual void startScanningModule(const Module& M) override {
     scanned++;
     std::cout << "\r[" << scanned << "/" << parsed << "] Scanning: "
         << M.getName() << "...                                                                                        ";
   }
 
-  virtual void stopScanningModule(const Module& M) override {};
+  virtual void stopScanningModule(const Module& M) override {}
 };
 
 void printHelp() {

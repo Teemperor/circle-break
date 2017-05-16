@@ -6,7 +6,6 @@
 #include <chrono>
 #include <ostream>
 #include <fstream>
-
 class HtmlReport {
 public:
   typedef std::unordered_map<const Module*, std::unordered_set<const Module*> > UsedModulesDict;
@@ -156,10 +155,10 @@ public:
     cycleFile << "<p style=\"font-weight: bold; \">" << getCycleString(Cycle) << "</p>\n";
     cycleFile << "<p>Break one of the following dependencies between those modules to resolve this cyclic dependency:</p>\n";
 
-    std::map<std::size_t, std::pair<const Module*, const Module*> > EdgesByWeight;
+    std::multimap<std::size_t, std::pair<const Module*, const Module*> > EdgesByWeight;
     for (std::size_t i = 0; i < Cycle.length() - 1; ++i) {
       auto Node = Cycle.at(i);
-      auto NextNode = Cycle.at((i + 1) % Cycle.length());
+      auto NextNode = Cycle.at(i + 1);
       auto weight = Node->getDependencyInformation().at(NextNode).weight;
       EdgesByWeight.emplace(weight, std::make_pair(Node, NextNode));
     }

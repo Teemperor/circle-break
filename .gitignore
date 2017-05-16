@@ -1,3 +1,5 @@
 .idea
 cmake-build-*
 *.html
+build
+CMakeLists.txt.user
