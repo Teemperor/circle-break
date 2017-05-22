@@ -3,8 +3,8 @@
 #include <Project.h>
 
 TEST(SCRAMProject, Project1) {
-  NoFeedback F;
-  SCRAMProject project("project1", F);
+  ProjectConfiguration Config;
+  SCRAMProject project("project1", Config);
 
   ASSERT_EQ(project.getModules().size(), 3);
 

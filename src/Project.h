@@ -39,11 +39,40 @@ public:
   virtual void stopScanningModule(const Module& M) {}
 };
 
+class ProjectConfiguration {
+  std::vector<std::string> AdditionalIncludePaths;
+  std::unique_ptr<ProjectFeedback> Feedback;
+public:
+  explicit ProjectConfiguration() : Feedback(new NoFeedback()){
+  }
+
+  explicit ProjectConfiguration(ProjectFeedback *Feedback) : Feedback(Feedback){
+  }
+
+  const std::vector<std::string>& getAdditionalIncludePaths() const {
+    return AdditionalIncludePaths;
+  }
+
+  void addIncludePath(const std::string& Path) {
+    AdditionalIncludePaths.push_back(Path);
+  }
+
+  void setFeedback(ProjectFeedback *F) {
+    Feedback.reset(F);
+  }
+
+  ProjectFeedback &getFeedback() {
+    return *Feedback;
+  }
+
+};
+
 class Project {
 
 protected:
   std::vector<Module> Modules;
   ProjectFeedback& Feedback;
+  ProjectConfiguration& Config;
 
   void link() {
     Feedback.startLinking();
@@ -55,7 +84,7 @@ protected:
   }
 
 public:
-  Project(ProjectFeedback& Feedback);
+  Project(ProjectConfiguration& Config);
 
   std::vector<DependencyPath> getCycles() const;
 
@@ -66,20 +95,21 @@ public:
 
 class SCRAMProject : public Project {
 public:
-  SCRAMProject(const std::string& path, ProjectFeedback& Feedback);
+  SCRAMProject(const std::string& path, ProjectConfiguration& Config);
 };
 
 class LibraryProject : public Project {
 public:
-  LibraryProject(const std::string& path, ProjectFeedback& Feedback) : Project(Feedback) {
+  LibraryProject(const std::string& path, ProjectConfiguration& Config) : Project(Config) {
     Module module("main");
     Feedback.startParsingModule(module);
 
     using namespace boost;
     filesystem::recursive_directory_iterator dir(path), end;
 
-    IncludePaths IncPaths(false);
+    IncludePaths IncPaths;
     IncPaths.addPath(path);
+    IncPaths.addPaths(Config.getAdditionalIncludePaths());
 
     Feedback.startParsing();
     while (dir != end) {

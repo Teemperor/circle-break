@@ -7,13 +7,16 @@ class IncludePaths {
   std::vector<std::string> Paths;
 
 public:
-  IncludePaths(bool AddCurrentDir = true) {
-    if (AddCurrentDir)
-      addPath(".");
+  IncludePaths() {
   }
 
   void addPath(const std::string& Path) {
     Paths.push_back(Path);
+  }
+
+  void addPaths(const std::vector<std::string>& NewPaths) {
+    for (const auto &Path : NewPaths)
+      addPath(Path);
   }
 
   std::string findFile(const std::string& PathStr) const;

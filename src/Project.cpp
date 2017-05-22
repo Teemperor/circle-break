@@ -2,8 +2,8 @@
 
 #include "Project.h"
 
-Project::Project(ProjectFeedback &Feedback)
-    : Feedback(Feedback) {
+Project::Project(ProjectConfiguration& Config)
+    : Feedback(Config.getFeedback()), Config(Config) {
 }
 
 std::vector<DependencyPath> Project::getCycles() const {
@@ -28,14 +28,15 @@ std::vector<DependencyPath> Project::getCycles() const {
   return Result;
 }
 
-SCRAMProject::SCRAMProject(const std::string &path, ProjectFeedback &Feedback)
-    : Project(Feedback) {
+SCRAMProject::SCRAMProject(const std::string &path, ProjectConfiguration& Config)
+    : Project(Config) {
 
   using namespace boost;
   filesystem::recursive_directory_iterator dir(path), end;
 
-  IncludePaths IncPaths(false);
+  IncludePaths IncPaths;
   IncPaths.addPath(path);
+  IncPaths.addPaths(Config.getAdditionalIncludePaths());
 
   Feedback.startParsing();
   while (dir != end) {
