@@ -28,8 +28,20 @@ public:
 
 class Project {
 
+protected:
   std::vector<Module> Modules;
   ProjectFeedback* Feedback;
+
+  IncludePaths IncPaths;
+
+  void link() {
+    if (Feedback) Feedback->startLinking();
+    for (auto& Module : Modules) {
+      if (Feedback) Feedback->startLinkingModule(Module);
+      Module.resolveDependencies(Modules);
+      if (Feedback) Feedback->stopLinkingModule(Module);
+    }
+  }
 
 public:
   Project(const std::string& path, ProjectFeedback* Feedback = nullptr);
@@ -39,8 +51,11 @@ public:
   const std::vector<Module>& getModules() const {
     return Modules;
   }
+};
 
-
+class SCRAMProject : public Project {
+public:
+  SCRAMProject(const std::string& path, ProjectFeedback* Feedback = nullptr);
 };
 
 

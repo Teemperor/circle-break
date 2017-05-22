@@ -2,8 +2,8 @@
 #include <gtest/gtest.h>
 #include <Project.h>
 
-TEST(Project, Project1) {
-  Project project("project1");
+TEST(SCRAMProject, Project1) {
+  SCRAMProject project("project1");
 
   ASSERT_EQ(project.getModules().size(), 3);
 

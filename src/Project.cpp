@@ -2,33 +2,8 @@
 
 #include "Project.h"
 
-Project::Project(const std::string &path, ProjectFeedback *Feedback) : Feedback(Feedback) {
-  using namespace boost;
-  filesystem::recursive_directory_iterator dir(path), end;
-
-  IncludePaths IncPaths(false);
-  IncPaths.addPath(path);
-
-  if (Feedback) Feedback->startParsing();
-  while (dir != end) {
-    if (dir->path().filename() == "interface") {
-      Module module(dir->path().string());
-      if (Feedback) Feedback->startParsingModule(module);
-      module.parseDirectory(dir->path().string(), IncPaths);
-      Modules.push_back(module);
-      if (Feedback) Feedback->stopParsingModule(module);
-    }
-
-    ++dir;
-  }
-
-  if (Feedback) Feedback->startLinking();
-  for (auto& Module : Modules) {
-    if (Feedback) Feedback->startLinkingModule(Module);
-    Module.resolveDependencies(Modules);
-    if (Feedback) Feedback->stopLinkingModule(Module);
-  }
-
+Project::Project(const std::string &path, ProjectFeedback *Feedback)
+    : Feedback(Feedback), IncPaths(false) {
 }
 
 std::vector<DependencyPath> Project::getCycles() const {
@@ -51,4 +26,29 @@ std::vector<DependencyPath> Project::getCycles() const {
   Result.erase(end, Result.end());
 
   return Result;
+}
+
+SCRAMProject::SCRAMProject(const std::string &path, ProjectFeedback *Feedback)
+    : Project(path, Feedback) {
+  IncPaths.addPath(path);
+
+  using namespace boost;
+  filesystem::recursive_directory_iterator dir(path), end;
+
+  IncludePaths IncPaths(false);
+  IncPaths.addPath(path);
+
+  if (Feedback) Feedback->startParsing();
+  while (dir != end) {
+    if (dir->path().filename() == "interface") {
+      Module module(dir->path().string());
+      if (Feedback) Feedback->startParsingModule(module);
+      module.parseDirectory(dir->path().string(), IncPaths);
+      Modules.push_back(module);
+      if (Feedback) Feedback->stopParsingModule(module);
+    }
+
+    ++dir;
+  }
+  link();
 }
