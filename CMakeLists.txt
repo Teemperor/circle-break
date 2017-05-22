@@ -7,7 +7,7 @@ find_package(Boost COMPONENTS system filesystem REQUIRED)
 
 include_directories(src)
 
-set(SOURCE_FILES main.cpp
+set(SOURCE_FILES
     src/Header.cpp
     src/Header.h
     src/HeaderInclude.cpp
@@ -35,6 +35,9 @@ target_link_libraries(circle-break-logic
 )
 
 add_executable(circle-break main.cpp)
+target_link_libraries(circle-break circle-break-logic)
+
+add_executable(module-gen module-gen.cpp)
 target_link_libraries(circle-break circle-break-logic)
 
 add_executable(circle-break-tests

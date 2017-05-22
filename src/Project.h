@@ -12,8 +12,6 @@
 class ProjectFeedback {
 public:
   virtual ~ProjectFeedback() = default;
-
-
   virtual void startParsing() = 0;
   virtual void startLinking() = 0;
   virtual void startScanning() = 0;
@@ -32,8 +30,6 @@ protected:
   std::vector<Module> Modules;
   ProjectFeedback* Feedback;
 
-  IncludePaths IncPaths;
-
   void link() {
     if (Feedback) Feedback->startLinking();
     for (auto& Module : Modules) {
@@ -44,7 +40,7 @@ protected:
   }
 
 public:
-  Project(const std::string& path, ProjectFeedback* Feedback = nullptr);
+  Project(ProjectFeedback* Feedback = nullptr);
 
   std::vector<DependencyPath> getCycles() const;
 
@@ -56,6 +52,31 @@ public:
 class SCRAMProject : public Project {
 public:
   SCRAMProject(const std::string& path, ProjectFeedback* Feedback = nullptr);
+};
+
+class LibraryProject : public Project {
+public:
+  LibraryProject(const std::string& path, ProjectFeedback* Feedback = nullptr) : Project(Feedback) {
+    Module module("main");
+    if (Feedback) Feedback->startParsingModule(module);
+
+    using namespace boost;
+    filesystem::recursive_directory_iterator dir(path), end;
+
+    IncludePaths IncPaths(false);
+    IncPaths.addPath(path);
+
+    if (Feedback) Feedback->startParsing();
+    while (dir != end) {
+      module.parseDirectory(dir->path().string(), IncPaths);
+      ++dir;
+    }
+
+    if (Feedback) Feedback->stopParsingModule(module);
+
+    Modules.push_back(module);
+    link();
+  }
 };
 
 
