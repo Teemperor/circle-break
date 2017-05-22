@@ -72,10 +72,12 @@ int main(int argc, char **argv) {
   }
 
   ConsoleProjectFeedback* Feedback = nullptr;
-  if (!Silent)
+  if (Silent)
+    Feedback = new NoFeedback();
+  else
     Feedback = new ConsoleProjectFeedback();
 
-  Project project(".", Feedback);
+  Project project(*Feedback);
   std::vector<DependencyPath> Cycles = project.getCycles();
 
 

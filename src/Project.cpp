@@ -2,22 +2,22 @@
 
 #include "Project.h"
 
-Project::Project(ProjectFeedback *Feedback)
+Project::Project(ProjectFeedback &Feedback)
     : Feedback(Feedback) {
 }
 
 std::vector<DependencyPath> Project::getCycles() const {
-  if (Feedback) Feedback->startScanning();
+  Feedback.startScanning();
   std::vector<DependencyPath> Result;
   for (auto& Module : Modules) {
-    if (Feedback) Feedback->startScanningModule(Module);
+    Feedback.startScanningModule(Module);
     for (auto& D : Module.getDependsOn()) {
       if (auto P = D->getPathTo(&Module)) {
         P.add(D);
         Result.push_back(P);
       }
     }
-    if (Feedback) Feedback->stopScanningModule(Module);
+    Feedback.stopScanningModule(Module);
   }
 
   auto end = std::unique(Result.begin(), Result.end(), [](DependencyPath& P1, DependencyPath& P2){
@@ -28,7 +28,7 @@ std::vector<DependencyPath> Project::getCycles() const {
   return Result;
 }
 
-SCRAMProject::SCRAMProject(const std::string &path, ProjectFeedback *Feedback)
+SCRAMProject::SCRAMProject(const std::string &path, ProjectFeedback &Feedback)
     : Project(Feedback) {
 
   using namespace boost;
@@ -37,14 +37,14 @@ SCRAMProject::SCRAMProject(const std::string &path, ProjectFeedback *Feedback)
   IncludePaths IncPaths(false);
   IncPaths.addPath(path);
 
-  if (Feedback) Feedback->startParsing();
+  Feedback.startParsing();
   while (dir != end) {
     if (dir->path().filename() == "interface") {
       Module module(dir->path().string());
-      if (Feedback) Feedback->startParsingModule(module);
+      Feedback.startParsingModule(module);
       module.parseDirectory(dir->path().string(), IncPaths);
       Modules.push_back(module);
-      if (Feedback) Feedback->stopParsingModule(module);
+      Feedback.stopParsingModule(module);
     }
 
     ++dir;

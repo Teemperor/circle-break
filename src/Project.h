@@ -24,23 +24,38 @@ public:
   virtual void stopScanningModule(const Module& M) = 0;
 };
 
+class NoFeedback : public ProjectFeedback {
+public:
+  virtual ~NoFeedback() = default;
+  virtual void startParsing() {}
+  virtual void startLinking() {}
+  virtual void startScanning() {}
+
+  virtual void startParsingModule(const Module& M) {}
+  virtual void stopParsingModule(const Module& M) {}
+  virtual void startLinkingModule(const Module& M) {}
+  virtual void stopLinkingModule(const Module& M) {}
+  virtual void startScanningModule(const Module& M) {}
+  virtual void stopScanningModule(const Module& M) {}
+};
+
 class Project {
 
 protected:
   std::vector<Module> Modules;
-  ProjectFeedback* Feedback;
+  ProjectFeedback& Feedback;
 
   void link() {
-    if (Feedback) Feedback->startLinking();
+    Feedback.startLinking();
     for (auto& Module : Modules) {
-      if (Feedback) Feedback->startLinkingModule(Module);
+      Feedback.startLinkingModule(Module);
       Module.resolveDependencies(Modules);
-      if (Feedback) Feedback->stopLinkingModule(Module);
+      Feedback.stopLinkingModule(Module);
     }
   }
 
 public:
-  Project(ProjectFeedback* Feedback = nullptr);
+  Project(ProjectFeedback& Feedback);
 
   std::vector<DependencyPath> getCycles() const;
 
@@ -51,14 +66,14 @@ public:
 
 class SCRAMProject : public Project {
 public:
-  SCRAMProject(const std::string& path, ProjectFeedback* Feedback = nullptr);
+  SCRAMProject(const std::string& path, ProjectFeedback& Feedback);
 };
 
 class LibraryProject : public Project {
 public:
-  LibraryProject(const std::string& path, ProjectFeedback* Feedback = nullptr) : Project(Feedback) {
+  LibraryProject(const std::string& path, ProjectFeedback& Feedback) : Project(Feedback) {
     Module module("main");
-    if (Feedback) Feedback->startParsingModule(module);
+    Feedback.startParsingModule(module);
 
     using namespace boost;
     filesystem::recursive_directory_iterator dir(path), end;
@@ -66,13 +81,13 @@ public:
     IncludePaths IncPaths(false);
     IncPaths.addPath(path);
 
-    if (Feedback) Feedback->startParsing();
+    Feedback.startParsing();
     while (dir != end) {
       module.parseDirectory(dir->path().string(), IncPaths);
       ++dir;
     }
 
-    if (Feedback) Feedback->stopParsingModule(module);
+    Feedback.stopParsingModule(module);
 
     Modules.push_back(module);
     link();
