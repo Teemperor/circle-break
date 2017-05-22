@@ -71,11 +71,11 @@ int main(int argc, char **argv) {
     }
   }
 
-  ConsoleProjectFeedback* Feedback = nullptr;
+  std::unique_ptr<ProjectFeedback> Feedback = nullptr;
   if (Silent)
-    Feedback = new NoFeedback();
+    Feedback.reset(new NoFeedback());
   else
-    Feedback = new ConsoleProjectFeedback();
+    Feedback.reset(new ConsoleProjectFeedback());
 
   Project project(*Feedback);
   std::vector<DependencyPath> Cycles = project.getCycles();
@@ -103,6 +103,4 @@ int main(int argc, char **argv) {
       Index++;
     }
   }
-
-  if (Feedback) delete Feedback;
 }
