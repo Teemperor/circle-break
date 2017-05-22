@@ -31,14 +31,14 @@ std::vector<DependencyPath> Project::getCycles() const {
 SCRAMProject::SCRAMProject(const std::string &path, ProjectConfiguration& Config)
     : Project(Config) {
 
-  using namespace boost;
-  filesystem::recursive_directory_iterator dir(path), end;
 
   IncludePaths IncPaths;
   IncPaths.addPath(path);
   IncPaths.addPaths(Config.getAdditionalIncludePaths());
 
   Feedback.startParsing();
+  using namespace boost;
+  filesystem::recursive_directory_iterator dir(path), end;
   while (dir != end) {
     if (dir->path().filename() == "interface") {
       Module module(dir->path().string());

@@ -104,16 +104,18 @@ public:
     Module module("main");
     Feedback.startParsingModule(module);
 
-    using namespace boost;
-    filesystem::recursive_directory_iterator dir(path), end;
 
     IncludePaths IncPaths;
     IncPaths.addPath(path);
     IncPaths.addPaths(Config.getAdditionalIncludePaths());
 
     Feedback.startParsing();
+
+    using namespace boost;
+    filesystem::recursive_directory_iterator dir(path), end;
     while (dir != end) {
-      module.parseDirectory(dir->path().string(), IncPaths);
+      if (dir->status().type() == boost::filesystem::file_type::directory_file)
+        module.parseDirectory(dir->path().string(), IncPaths);
       ++dir;
     }
 

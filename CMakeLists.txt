@@ -26,7 +26,7 @@ set(SOURCE_FILES
     src/FileSystemCache.h
     src/HtmlReport.cpp
     src/HtmlReport.h
-)
+        src/ConsoleProjectFeedback.h)
 
 add_library(circle-break-logic ${SOURCE_FILES})
 target_link_libraries(circle-break-logic
@@ -38,7 +38,7 @@ add_executable(circle-break main.cpp)
 target_link_libraries(circle-break circle-break-logic)
 
 add_executable(module-gen module-gen.cpp)
-target_link_libraries(circle-break circle-break-logic)
+target_link_libraries(module-gen circle-break-logic)
 
 add_executable(circle-break-tests
                tests/test.cpp

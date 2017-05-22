@@ -18,12 +18,14 @@ void Module::parseDirectory(const std::string &DirectoryPath,
   UsedIncludePaths.addPath(DirectoryPath);
 
   using namespace boost::filesystem;
-  directory_iterator files(DirectoryPath), eod;
-  while (files != eod) {
-    std::string file = files->path().string();
-    Header header(file, UsedIncludePaths);
-    Headers.push_back(header);
-    files++;
+  directory_iterator File(DirectoryPath), eod;
+  while (File != eod) {
+    if (File->status().type() == boost::filesystem::file_type::regular_file) {
+      std::string FilePath = File->path().string();
+      Header header(FilePath, UsedIncludePaths);
+      Headers.push_back(header);
+    }
+    File++;
   }
 }
 
