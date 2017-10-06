@@ -10,12 +10,15 @@ public:
   IncludePaths() {
   }
 
-  void addPath(const std::string& Path) {
-    Paths.push_back(Path);
-  }
+  void addPath(std::string Path);
 
   void addPaths(const std::vector<std::string>& NewPaths) {
     for (const auto &Path : NewPaths)
+      addPath(Path);
+  }
+
+  void addPaths(const IncludePaths& ToAdd) {
+    for (const auto &Path : ToAdd.Paths)
       addPath(Path);
   }
 

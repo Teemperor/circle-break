@@ -6,14 +6,17 @@
 
 #include "StringCache.h"
 #include "IncludePaths.h"
+#include "HeaderID.h"
 
 class Module;
+class Header;
 
 class HeaderInclude {
 
   StringCache::ID File;
   unsigned LineNumber;
   const Module* DependingModule = nullptr;
+  HeaderID TargetID;
 
 public:
   HeaderInclude() {
@@ -28,15 +31,19 @@ public:
     return File;
   }
 
+  bool knowTarget() const {
+    return DependingModule != nullptr;
+  }
+
   bool parse(const std::string& str, const IncludePaths& Includes);
 
-  void setDependingModule(const Module* M) {
-    DependingModule = M;
-  }
+  void setDependingModule(const Module* M);
 
   const Module* getDependingModule() const {
     return DependingModule;
   }
+
+  const Header& getHeader() const;
 
   void setLine(unsigned int NewLineNumber) {
     LineNumber = NewLineNumber;

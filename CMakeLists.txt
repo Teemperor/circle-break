@@ -19,14 +19,18 @@ set(SOURCE_FILES
     src/Project.cpp
     src/Project.h
     src/IncludePaths.cpp
-    src/IncludePaths.h src/MiscUtils.h
+    src/IncludePaths.h
+    src/MiscUtils.h
     src/DependencyPath.cpp
     src/DependencyPath.h
     src/FileSystemCache.cpp
     src/FileSystemCache.h
     src/HtmlReport.cpp
     src/HtmlReport.h
-        src/ConsoleProjectFeedback.h)
+    src/ConsoleProjectFeedback.h
+    src/DependencyTree.cpp
+    src/DependencyTree.h
+        src/HeaderID.cpp src/HeaderID.h src/ProjectFeedback.cpp src/ProjectFeedback.h)
 
 add_library(circle-break-logic ${SOURCE_FILES})
 target_link_libraries(circle-break-logic

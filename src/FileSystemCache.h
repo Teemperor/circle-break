@@ -12,7 +12,7 @@ public:
 
   static FileSystemCache& get();
 
-  bool exists(const std::string& LookupPath);
+  bool fileExists(const std::string &LookupPath);
 
 };
 

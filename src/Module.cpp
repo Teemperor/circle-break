@@ -1,5 +1,7 @@
 #include "Module.h"
 
+#include "ProjectFeedback.h"
+
 void Module::updateName() {
   Name = Path.str();
   if (hasEnding(Name, "/interface")) {
@@ -10,9 +12,7 @@ void Module::updateName() {
 }
 
 void Module::parseDirectory(const std::string &DirectoryPath,
-                            const IncludePaths &GivenIncludePaths) {
-  Path = normalizePath(DirectoryPath);
-  updateName();
+                            const IncludePaths &GivenIncludePaths, ProjectFeedback& F) {
 
   IncludePaths UsedIncludePaths = GivenIncludePaths;
   UsedIncludePaths.addPath(DirectoryPath);
@@ -22,30 +22,39 @@ void Module::parseDirectory(const std::string &DirectoryPath,
   while (File != eod) {
     if (File->status().type() == boost::filesystem::file_type::regular_file) {
       std::string FilePath = File->path().string();
-      Header header(FilePath, UsedIncludePaths);
+      path full_path(current_path());
+      std::string AbsPath = normalizePath((full_path / path(FilePath)).string());
+
+      F.startParsingHeader(FilePath);
+      Header header(FilePath, AbsPath, UsedIncludePaths);
       Headers.push_back(header);
+      F.stopParsingHeader(header);
     }
     File++;
   }
 }
 
-void Module::resolveDependencies(const std::vector<Module> &AllModules) {
+void Module::resolveDependencies(const std::vector<Module> &AllModules, ProjectFeedback& F) {
   for (auto& Header : Headers) {
-    for (auto& Include : Header.getIncludedHeaders()) {
-      std::string HeaderPath = Include.getFile().str();
+    F.startLinkingHeader(Header);
 
-      for (auto& Module : AllModules) {
-        if (Module.hasHeader(HeaderPath)) {
-          Include.setDependingModule(&Module);
-          if (&Module != this) {
-            auto I = DependsOn.find(&Module);
-            DependsOn[&Module].weight += 1;
+    for (auto& Include : Header.getIncludedHeaders()) {
+
+      auto HeaderPath = Include.getFile();
+      if (HeaderPath.valid()) {
+        for (auto& Module : AllModules) {
+          if (Module.hasHeader(HeaderPath)) {
+            Include.setDependingModule(&Module);
+            if (&Module != this) {
+              auto I = DependsOn.find(&Module);
+              DependsOn[&Module].weight += 1;
+            }
+            break;
           }
-          break;
         }
       }
-
     }
+    F.stopLinkingHeader(Header);
   }
 }
 

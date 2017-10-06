@@ -1,5 +1,6 @@
 #include <HeaderInclude.h>
 #include <gtest/gtest.h>
+#include <MiscUtils.h>
 
 TEST(HeaderInclude, parse) {
   IncludePaths IncludePaths;
@@ -7,15 +8,15 @@ TEST(HeaderInclude, parse) {
 
   HeaderInclude include;
   EXPECT_TRUE(include.parse("#include <iostream>", IncludePaths));
-  EXPECT_EQ(include.getFile().str(), "testincludes/iostream");
+  EXPECT_EQ(include.getFile().str(), current_cwd() + "testincludes/iostream");
   EXPECT_TRUE(include.parse(" #include <string>", IncludePaths));
-  EXPECT_EQ(include.getFile().str(), "testincludes/string");
+  EXPECT_EQ(include.getFile().str(), current_cwd() + "testincludes/string");
   EXPECT_TRUE(include.parse("   #include <locale>", IncludePaths));
-  EXPECT_EQ(include.getFile().str(), "testincludes/locale");
+  EXPECT_EQ(include.getFile().str(), current_cwd() + "testincludes/locale");
   EXPECT_TRUE(include.parse("#include <regex> // mombo", IncludePaths));
-  EXPECT_EQ(include.getFile().str(), "testincludes/regex");
+  EXPECT_EQ(include.getFile().str(), current_cwd() + "testincludes/regex");
   EXPECT_TRUE(include.parse("  #include <vector> // mambo", IncludePaths));
-  EXPECT_EQ(include.getFile().str(), "testincludes/vector");
+  EXPECT_EQ(include.getFile().str(), current_cwd() + "testincludes/vector");
 
   // nonexisting file
   EXPECT_FALSE(include.parse("#include <nonexistingfile>", IncludePaths));

@@ -8,36 +8,7 @@
 #include <vector>
 
 #include "Module.h"
-
-class ProjectFeedback {
-public:
-  virtual ~ProjectFeedback() = default;
-  virtual void startParsing() = 0;
-  virtual void startLinking() = 0;
-  virtual void startScanning() = 0;
-
-  virtual void startParsingModule(const Module& M) = 0;
-  virtual void stopParsingModule(const Module& M) = 0;
-  virtual void startLinkingModule(const Module& M) = 0;
-  virtual void stopLinkingModule(const Module& M) = 0;
-  virtual void startScanningModule(const Module& M) = 0;
-  virtual void stopScanningModule(const Module& M) = 0;
-};
-
-class NoFeedback : public ProjectFeedback {
-public:
-  virtual ~NoFeedback() = default;
-  virtual void startParsing() {}
-  virtual void startLinking() {}
-  virtual void startScanning() {}
-
-  virtual void startParsingModule(const Module& M) {}
-  virtual void stopParsingModule(const Module& M) {}
-  virtual void startLinkingModule(const Module& M) {}
-  virtual void stopLinkingModule(const Module& M) {}
-  virtual void startScanningModule(const Module& M) {}
-  virtual void stopScanningModule(const Module& M) {}
-};
+#include "ProjectFeedback.h"
 
 class ProjectConfiguration {
   std::vector<std::string> AdditionalIncludePaths;
@@ -78,7 +49,7 @@ protected:
     Feedback.startLinking();
     for (auto& Module : Modules) {
       Feedback.startLinkingModule(Module);
-      Module.resolveDependencies(Modules);
+      Module.resolveDependencies(Modules, Feedback);
       Feedback.stopLinkingModule(Module);
     }
   }
@@ -104,18 +75,20 @@ public:
     Module module("main");
     Feedback.startParsingModule(module);
 
-
     IncludePaths IncPaths;
     IncPaths.addPath(path);
     IncPaths.addPaths(Config.getAdditionalIncludePaths());
 
     Feedback.startParsing();
 
+    module.parseDirectory(path, IncPaths, Feedback);
+
     using namespace boost;
     filesystem::recursive_directory_iterator dir(path), end;
     while (dir != end) {
-      if (dir->status().type() == boost::filesystem::file_type::directory_file)
-        module.parseDirectory(dir->path().string(), IncPaths);
+      if (dir->status().type() == boost::filesystem::file_type::directory_file) {
+        module.parseDirectory(dir->path().string(), IncPaths, Feedback);
+      }
       ++dir;
     }
 

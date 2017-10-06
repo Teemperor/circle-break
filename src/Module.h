@@ -8,6 +8,9 @@
 #include "IncludePaths.h"
 #include "Header.h"
 #include "DependencyPath.h"
+#include "HeaderID.h"
+
+class ProjectFeedback;
 
 struct DependencyData {
   unsigned weight = 0;
@@ -30,11 +33,14 @@ public:
     updateName();
   }
 
-  Module(const std::string& Path, const IncludePaths& GivenIncludePaths) {
-    parseDirectory(Path, GivenIncludePaths);
+  Module(const std::string& Path, const IncludePaths& GivenIncludePaths,
+         ProjectFeedback& F) {
+    parseDirectory(Path, GivenIncludePaths, F);
   }
 
-  void parseDirectory(const std::string& DirectoryPath, const IncludePaths& GivenIncludePaths);
+  void parseDirectory(const std::string& DirectoryPath,
+                      const IncludePaths& GivenIncludePaths,
+                      ProjectFeedback& F);
 
   void addDependency(const Module* M) {
     DependsOn[M].weight++;
@@ -42,10 +48,28 @@ public:
 
   bool hasHeader(StringCache::ID HeaderPath) const {
     for (auto& Header : Headers) {
-      if (Header.getPath() == HeaderPath)
+      if (Header.getAbsPath() == HeaderPath)
         return true;
     }
     return false;
+  }
+
+  HeaderID getHeaderID(StringCache::ID HeaderPath) const {
+    HeaderID Result;
+    std::size_t ID = 0;
+    for (auto& Header : Headers) {
+      if (Header.getAbsPath() == HeaderPath) {
+        Result.Value = ID;
+        break;
+      }
+      ID++;
+    }
+    return Result;
+  }
+
+  const Header& getHeader(HeaderID ID) const {
+    assert(ID.Value < Headers.size());
+    return Headers[ID.Value];
   }
 
   bool hasHeader(const std::string& HeaderPath) const {
@@ -62,7 +86,7 @@ public:
     return Name;
   }
 
-  void resolveDependencies(const std::vector<Module>& AllModules);
+  void resolveDependencies(const std::vector<Module>& AllModules, ProjectFeedback& F);
 
   DependencyPath getPathTo(const Module* Target) const;
 

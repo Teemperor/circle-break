@@ -43,7 +43,7 @@ SCRAMProject::SCRAMProject(const std::string &path, ProjectConfiguration& Config
     if (dir->path().filename() == "interface") {
       Module module(dir->path().string());
       Feedback.startParsingModule(module);
-      module.parseDirectory(dir->path().string(), IncPaths);
+      module.parseDirectory(dir->path().string(), IncPaths, Feedback);
       Modules.push_back(module);
       Feedback.stopParsingModule(module);
     }

@@ -1,0 +1,7 @@
+
+#ifndef CIRCLE_BREAK_UTILHEADER1_H
+#define CIRCLE_BREAK_UTILHEADER1_H
+
+#include "UtilHeader2.h"
+
+#endif //CIRCLE_BREAK_UTILHEADER1_H

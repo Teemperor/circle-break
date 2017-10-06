@@ -37,6 +37,13 @@ public:
       return InternalID != Other.InternalID;
     }
 
+    bool operator<(const ID& Other) const {
+      return InternalID < Other.InternalID;
+    }
+    bool operator>(const ID& Other) const {
+      return InternalID > Other.InternalID;
+    }
+
     bool operator==(const std::string& Other) const {
       return *this == StringCache::get()[Other];
     }

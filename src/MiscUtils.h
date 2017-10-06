@@ -14,6 +14,10 @@ inline std::string normalizePath(std::string P) {
   return P;
 }
 
+inline std::string current_cwd() {
+  return boost::filesystem::path(boost::filesystem::current_path()).string() + "/";
+}
+
 inline bool hasEnding (std::string const &fullString, std::string const &ending) {
   if (fullString.length() >= ending.length()) {
     return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
